@@ -1,98 +1,111 @@
-class MyBasicNode {
-    public next: MyBasicNode | null = null;
-    public data: string;
+class GenericNode<T> {
+    public next: GenericNode<T> | null = null;
+    public data: T;
 
-    constructor(data: string) {
-        this.data = data;
+    constructor(value: T) {
+        this.data = value;
     }
 }
 
-interface IMyBasicLinkedList {
-    addElementAtBegining(data: string): MyBasicNode;
-    addElementAtEnd(data: string): MyBasicNode;
-    deleteElementAtBegining(): boolean;
-    deleteElementAtEnd(): boolean;
-    throughList(): string[];
+interface ISingleLinkedList<T> {
+    addElementAtBegin(data: T): GenericNode<T>;
+    addElementAtEnd(data: T): GenericNode<T>;
+    removeElementAtBegin(): boolean;
+    removeElementAtEnd(): boolean;
+    toArray(): T[];
     size(): number;
-    search(criteria: (data: string) => boolean): MyBasicNode | null;
+    searchFirst(criteria: (data: T) => boolean): GenericNode<T> | null;
+    searchAll(criteria: (data: T) => boolean): GenericNode<T>[] | null;
 }
 
-class MyBasicLinkedList implements IMyBasicLinkedList {
+class SingleLinkedList<T> implements ISingleLinkedList<T> {
+    public rootNode: GenericNode<T> | null = null;
 
-    public rootNode: MyBasicNode | null = null;
-
-    addElementAtBegining(data: string): MyBasicNode {
-        const newNode = new MyBasicNode(data);
-        if (!this.rootNode) return this.rootNode = newNode;
-
-        newNode.next = this.rootNode;
-        this.rootNode = newNode;
-
-        return newNode;
-    }
-
-    addElementAtEnd(data: string): MyBasicNode {
-        const node = new MyBasicNode(data);
-        const getLast = (node: MyBasicNode): MyBasicNode => {
-            return (node.next) ? getLast(node.next) : node;
-        };
+    addElementAtBegin(data: T): GenericNode<T> {
+        const node = new GenericNode(data);
         if (!this.rootNode) return this.rootNode = node;
-        getLast(this.rootNode).next = node;
-        return node;
+        node.next = this.rootNode;
+        return this.rootNode = node;
     }
 
-    deleteElementAtBegining(): boolean {
-        if (!this.rootNode || !this.rootNode.next) return false;
-        const currentNext = this.rootNode.next;
-        this.rootNode = currentNext;
+    addElementAtEnd(data: T): GenericNode<T> {
+        const node = new GenericNode(data);
+        const getLast = (node: GenericNode<T>): GenericNode<T> => node.next ? getLast(node.next) : node;
+
+        if (!this.rootNode) return this.rootNode = node;
+        return getLast(this.rootNode).next = node;
+    }
+
+    removeElementAtBegin(): boolean {
+        if (!this.rootNode) return false;
+        this.rootNode.next = this.rootNode.next ? this.rootNode = this.rootNode.next : this.rootNode = null;
         return true;
     }
 
-    deleteElementAtEnd(): boolean {
-        throw new Error("Meplota el serevro");
+    removeElementAtEnd(): boolean {
+        if (!this.rootNode) return false;
+        const getSecondLast = (node: GenericNode<T>): GenericNode<T> | null => {
+            if (!node.next) return null;
+            return !node.next.next ? node : getSecondLast(node.next);
+        }
+        const secondLastNode = getSecondLast(this.rootNode);
+        if (secondLastNode) secondLastNode.next = null;
+
+        return true;
     }
 
-    throughList(): string[] {
-        const toStringArray = (node: MyBasicNode): string[] => {
+    toArray(): T[] {
+        const array: T[] = [];
+        const pushToArray = (node: GenericNode<T>): T[] => {
             array.push(node.data);
-            return (node.next) ? toStringArray(node.next) : array;
-        };
-        const array: string[] = [];
-        if (!this.rootNode) return array;
-        return toStringArray(this.rootNode);
+            return node.next ? pushToArray(node.next) : array;
+        }
+        return this.rootNode ? pushToArray(this.rootNode) : array;
     }
 
     size(): number {
-        return this.throughList().length
+        return this.toArray().length;
     }
 
-    search(criteria: (data: string) => boolean): MyBasicNode | null {
-        const checkNext = (node: MyBasicNode): MyBasicNode | null => {
+    searchFirst(criteria: (data: T) => boolean): GenericNode<T> | null {
+        const checkNext = (node: GenericNode<T>): GenericNode<T> | null => {
             if (criteria(node.data)) return node;
             return node.next ? checkNext(node.next) : null;
         }
         return this.rootNode ? checkNext(this.rootNode) : null;
     }
+
+    searchAll(criteria: (data: T) => boolean): GenericNode<T>[] | null {
+        const array: GenericNode<T>[] = [];
+        const checkNext = (node: GenericNode<T>): GenericNode<T>[] | null => {
+            if (criteria(node.data)) array.push(node);
+            return node.next ? checkNext(node.next) : array;
+        }
+        return this.rootNode ? checkNext(this.rootNode) : null;
+    }
 }
 
-const maxNodes = 50;
-const listReport = (linkedList: MyBasicLinkedList): void => {
-    console.log('-------- REPORT START --------');
-    console.log('- Root node: ', linkedList.rootNode);
-    console.log(`- List size: ${linkedList.size()}`);
-    console.log('- Status: ', linkedList.throughList());
-    console.log('-------- REPORT END --------');
-}
-const testList = new MyBasicLinkedList();
-testList.addElementAtBegining('ROOT NODE');
-
-for (let addIndex = 1; addIndex <= maxNodes; addIndex++) {
-    //testList.addElementAtBegining(`Node ${addIndex}`);
-    testList.addElementAtEnd(`Node ${-addIndex}`);
+interface RandomDataType {
+    stringValue: string;
+    numericValue: number;
+    booleanValue: boolean;
 }
 
-console.log(testList.search((value: string) => {
-    return (value === "Node x");
-}))
+const singleLinkedList = new SingleLinkedList<RandomDataType>();
+singleLinkedList.addElementAtBegin({ stringValue: "Root node", numericValue: 0, booleanValue: true });
 
-listReport(testList);
+for (let index = 1; index <= 10; index++)
+    singleLinkedList.addElementAtEnd({ stringValue: `Node ${index}`, numericValue: index, booleanValue: index % 2 === 0 });
+
+
+
+console.log(singleLinkedList.rootNode);
+console.log(singleLinkedList.size());
+
+console.log(singleLinkedList.removeElementAtBegin());
+console.log(singleLinkedList.removeElementAtEnd());
+console.log(singleLinkedList.toArray());
+
+const searchCriteria = (value: RandomDataType) => value.booleanValue === true;
+console.log('SearchFirst: ', singleLinkedList.searchFirst(searchCriteria));
+console.log('SearchAll: ', singleLinkedList.searchAll(searchCriteria));

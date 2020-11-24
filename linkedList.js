@@ -1,57 +1,60 @@
 "use strict";
-var MyBasicNode = /** @class */ (function () {
-    function MyBasicNode(data) {
+var GenericNode = /** @class */ (function () {
+    function GenericNode(value) {
         this.next = null;
-        this.data = data;
+        this.data = value;
     }
-    return MyBasicNode;
+    return GenericNode;
 }());
-var MyBasicLinkedList = /** @class */ (function () {
-    function MyBasicLinkedList() {
+var SingleLinkedList = /** @class */ (function () {
+    function SingleLinkedList() {
         this.rootNode = null;
     }
-    MyBasicLinkedList.prototype.addElementAtBegining = function (data) {
-        var newNode = new MyBasicNode(data);
-        if (!this.rootNode)
-            return this.rootNode = newNode;
-        newNode.next = this.rootNode;
-        this.rootNode = newNode;
-        return newNode;
-    };
-    MyBasicLinkedList.prototype.addElementAtEnd = function (data) {
-        var node = new MyBasicNode(data);
-        var getLast = function (node) {
-            return (node.next) ? getLast(node.next) : node;
-        };
+    SingleLinkedList.prototype.addElementAtBegin = function (data) {
+        var node = new GenericNode(data);
         if (!this.rootNode)
             return this.rootNode = node;
-        getLast(this.rootNode).next = node;
-        return node;
+        node.next = this.rootNode;
+        return this.rootNode = node;
     };
-    MyBasicLinkedList.prototype.deleteElementAtBegining = function () {
-        if (!this.rootNode || !this.rootNode.next)
+    SingleLinkedList.prototype.addElementAtEnd = function (data) {
+        var node = new GenericNode(data);
+        var getLast = function (node) { return node.next ? getLast(node.next) : node; };
+        if (!this.rootNode)
+            return this.rootNode = node;
+        return getLast(this.rootNode).next = node;
+    };
+    SingleLinkedList.prototype.removeElementAtBegin = function () {
+        if (!this.rootNode)
             return false;
-        var currentNext = this.rootNode.next;
-        this.rootNode = currentNext;
+        this.rootNode.next = this.rootNode.next ? this.rootNode = this.rootNode.next : this.rootNode = null;
         return true;
     };
-    MyBasicLinkedList.prototype.deleteElementAtEnd = function () {
-        throw new Error("Meplota el serevro");
-    };
-    MyBasicLinkedList.prototype.throughList = function () {
-        var toStringArray = function (node) {
-            array.push(node.data);
-            return (node.next) ? toStringArray(node.next) : array;
-        };
-        var array = [];
+    SingleLinkedList.prototype.removeElementAtEnd = function () {
         if (!this.rootNode)
-            return array;
-        return toStringArray(this.rootNode);
+            return false;
+        var getSecondLast = function (node) {
+            if (!node.next)
+                return null;
+            return !node.next.next ? node : getSecondLast(node.next);
+        };
+        var secondLastNode = getSecondLast(this.rootNode);
+        if (secondLastNode)
+            secondLastNode.next = null;
+        return true;
     };
-    MyBasicLinkedList.prototype.size = function () {
-        return this.throughList().length;
+    SingleLinkedList.prototype.toArray = function () {
+        var array = [];
+        var pushToArray = function (node) {
+            array.push(node.data);
+            return node.next ? pushToArray(node.next) : array;
+        };
+        return this.rootNode ? pushToArray(this.rootNode) : array;
     };
-    MyBasicLinkedList.prototype.search = function (criteria) {
+    SingleLinkedList.prototype.size = function () {
+        return this.toArray().length;
+    };
+    SingleLinkedList.prototype.searchFirst = function (criteria) {
         var checkNext = function (node) {
             if (criteria(node.data))
                 return node;
@@ -59,23 +62,26 @@ var MyBasicLinkedList = /** @class */ (function () {
         };
         return this.rootNode ? checkNext(this.rootNode) : null;
     };
-    return MyBasicLinkedList;
+    SingleLinkedList.prototype.searchAll = function (criteria) {
+        var array = [];
+        var checkNext = function (node) {
+            if (criteria(node.data))
+                array.push(node);
+            return node.next ? checkNext(node.next) : array;
+        };
+        return this.rootNode ? checkNext(this.rootNode) : null;
+    };
+    return SingleLinkedList;
 }());
-var maxNodes = 50;
-var listReport = function (linkedList) {
-    console.log('-------- REPORT START --------');
-    console.log('- Root node: ', linkedList.rootNode);
-    console.log("- List size: " + linkedList.size());
-    console.log('- Status: ', linkedList.throughList());
-    console.log('-------- REPORT END --------');
-};
-var testList = new MyBasicLinkedList();
-testList.addElementAtBegining('ROOT NODE');
-for (var addIndex = 1; addIndex <= maxNodes; addIndex++) {
-    //testList.addElementAtBegining(`Node ${addIndex}`);
-    testList.addElementAtEnd("Node " + -addIndex);
-}
-console.log(testList.search(function (value) {
-    return (value === "Node x");
-}));
-listReport(testList);
+var singleLinkedList = new SingleLinkedList();
+singleLinkedList.addElementAtBegin({ stringValue: "Root node", numericValue: 0, booleanValue: true });
+for (var index = 1; index <= 10; index++)
+    singleLinkedList.addElementAtEnd({ stringValue: "Node " + index, numericValue: index, booleanValue: index % 2 === 0 });
+console.log(singleLinkedList.rootNode);
+console.log(singleLinkedList.size());
+console.log(singleLinkedList.removeElementAtBegin());
+console.log(singleLinkedList.removeElementAtEnd());
+console.log(singleLinkedList.toArray());
+var searchCriteria = function (value) { return value.booleanValue === true; };
+console.log('SearchFirst: ', singleLinkedList.searchFirst(searchCriteria));
+console.log('SearchAll: ', singleLinkedList.searchAll(searchCriteria));
