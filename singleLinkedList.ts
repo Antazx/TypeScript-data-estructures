@@ -1,5 +1,5 @@
-class GenericNode<T> {
-    public next: GenericNode<T> | null = null;
+class SingleNode<T> {
+    public next: SingleNode<T> | null = null;
     public data: T;
 
     constructor(value: T) {
@@ -8,29 +8,29 @@ class GenericNode<T> {
 }
 
 interface ISingleLinkedList<T> {
-    addElementAtBegin(data: T): GenericNode<T>;
-    addElementAtEnd(data: T): GenericNode<T>;
+    addElementAtBegin(data: T): SingleNode<T>;
+    addElementAtEnd(data: T): SingleNode<T>;
     removeElementAtBegin(): boolean;
     removeElementAtEnd(): boolean;
     toArray(): T[];
     size(): number;
-    searchFirst(criteria: (data: T) => boolean): GenericNode<T> | null;
-    searchAll(criteria: (data: T) => boolean): GenericNode<T>[] | null;
+    searchFirst(criteria: (data: T) => boolean): SingleNode<T> | null;
+    searchAll(criteria: (data: T) => boolean): SingleNode<T>[] | null;
 }
 
 class SingleLinkedList<T> implements ISingleLinkedList<T> {
-    public rootNode: GenericNode<T> | null = null;
+    public rootNode: SingleNode<T> | null = null;
 
-    addElementAtBegin(data: T): GenericNode<T> {
-        const node = new GenericNode(data);
+    addElementAtBegin(data: T): SingleNode<T> {
+        const node = new SingleNode(data);
         if (!this.rootNode) return this.rootNode = node;
         node.next = this.rootNode;
         return this.rootNode = node;
     }
 
-    addElementAtEnd(data: T): GenericNode<T> {
-        const node = new GenericNode(data);
-        const getLast = (node: GenericNode<T>): GenericNode<T> => node.next ? getLast(node.next) : node;
+    addElementAtEnd(data: T): SingleNode<T> {
+        const node = new SingleNode(data);
+        const getLast = (node: SingleNode<T>): SingleNode<T> => node.next ? getLast(node.next) : node;
 
         if (!this.rootNode) return this.rootNode = node;
         return getLast(this.rootNode).next = node;
@@ -44,7 +44,7 @@ class SingleLinkedList<T> implements ISingleLinkedList<T> {
 
     removeElementAtEnd(): boolean {
         if (!this.rootNode) return false;
-        const getSecondLast = (node: GenericNode<T>): GenericNode<T> | null => {
+        const getSecondLast = (node: SingleNode<T>): SingleNode<T> | null => {
             if (!node.next) return null;
             return !node.next.next ? node : getSecondLast(node.next);
         }
@@ -56,7 +56,7 @@ class SingleLinkedList<T> implements ISingleLinkedList<T> {
 
     toArray(): T[] {
         const array: T[] = [];
-        const pushToArray = (node: GenericNode<T>): T[] => {
+        const pushToArray = (node: SingleNode<T>): T[] => {
             array.push(node.data);
             return node.next ? pushToArray(node.next) : array;
         }
@@ -67,17 +67,17 @@ class SingleLinkedList<T> implements ISingleLinkedList<T> {
         return this.toArray().length;
     }
 
-    searchFirst(criteria: (data: T) => boolean): GenericNode<T> | null {
-        const checkNext = (node: GenericNode<T>): GenericNode<T> | null => {
+    searchFirst(criteria: (data: T) => boolean): SingleNode<T> | null {
+        const checkNext = (node: SingleNode<T>): SingleNode<T> | null => {
             if (criteria(node.data)) return node;
             return node.next ? checkNext(node.next) : null;
         }
         return this.rootNode ? checkNext(this.rootNode) : null;
     }
 
-    searchAll(criteria: (data: T) => boolean): GenericNode<T>[] | null {
-        const array: GenericNode<T>[] = [];
-        const checkNext = (node: GenericNode<T>): GenericNode<T>[] | null => {
+    searchAll(criteria: (data: T) => boolean): SingleNode<T>[] | null {
+        const array: SingleNode<T>[] = [];
+        const checkNext = (node: SingleNode<T>): SingleNode<T>[] | null => {
             if (criteria(node.data)) array.push(node);
             return node.next ? checkNext(node.next) : array;
         }
